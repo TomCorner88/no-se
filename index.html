@@ -1,68 +1,59 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Carrito Control</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 50px;
-        }
-        #mensaje {
-            font-size: 20px;
-            margin-bottom: 30px;
-        }
-        #boton {
-            padding: 30px 50px;
-            font-size: 24px;
-            background-color: #ff5555;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-        #boton:active {
-            background-color: #ff2222;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Botón Idiota</title>
+  <style>
+    body { text-align:center; font-family: Arial; background:#f2f2f2; margin-top:50px; }
+    h1 { color: #333; }
+    #boton { 
+      font-size: 2em; padding: 20px 40px; margin-top: 30px; 
+      background: #ff6666; border:none; border-radius:10px; color:white; 
+      cursor:pointer; 
+    }
+    #mensaje { margin-top:20px; font-size: 1.5em; color:#555; }
+  </style>
 </head>
 <body>
+  <h1>Esta es la web de un idiota 😅</h1>
+  <p>Presiona el botón:</p>
+  <button id="boton">PRESIONAME</button>
+  <div id="mensaje"></div>
 
-<h1>Carrito Control</h1>
-<p id="mensaje">Esta es la web de un idiota, se hace cosas porque se aburre; presiona el botón</p>
-<button id="boton">PRESIONAME</button>
+  <!-- Incluimos la librería Paho MQTT -->
+  <script src="https://unpkg.com/paho-mqtt@1.1.0/paho-mqtt-min.js"></script>
+  <script>
+    // Configuración del broker
+    const broker = "tu_broker_url"; // reemplaza con la URL real de tu broker
+    const port = 8884;               // puerto WebSocket
+    const user = "Kevin Kennedy";    // usuario del broker
+    const password = "Pelotudo2";    // contraseña del broker
+    const topic = "carrito/boton";   // tópico MQTT
 
-<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-<script>
-    const mqttHost = "9273c25435524d1b9ae29941e33d1e8e.s1.eu.hivemq.cloud";
-    const mqttPort = 8884; // WebSocket
-    const mqttUser = "Kevin Kennedy";
-    const mqttPass = "Pelotudo2";
-    const topic = "carrito/commands";
+    // Creamos cliente MQTT
+    const client = new Paho.MQTT.Client(broker, port, "webClient");
 
-    // Conexión al broker
-    const client = mqtt.connect(`wss://${mqttHost}:${mqttPort}`, {
-        username: mqttUser,
-        password: mqttPass
+    client.connect({
+      useSSL: true,
+      userName: user,
+      password: password,
+      onSuccess: onConnect,
+      onFailure: function(err){ console.log("Error conexión: ", err); }
     });
 
-    client.on('connect', () => {
-        console.log('Conectado al broker MQTT');
+    function onConnect() {
+      console.log("Conectado al broker!");
+    }
+
+    // Función al presionar el botón
+    document.getElementById("boton").addEventListener("click", function() {
+      if(client.isConnected()){
+        client.send(topic, "ON");  // Envía mensaje al ESP32
+        document.getElementById("mensaje").innerText = "Gracias por perder tu tiempo tan valioso en esta estupidez 😅";
+      } else {
+        document.getElementById("mensaje").innerText = "No conectado al broker 😬";
+      }
     });
-
-    client.on('error', (err) => {
-        console.error('Error de conexión: ', err);
-    });
-
-    // Botón para enviar mensaje
-    const boton = document.getElementById('boton');
-    const mensaje = document.getElementById('mensaje');
-
-    boton.addEventListener('click', () => {
-        client.publish(topic, 'BUZ_ON'); // Envia mensaje al ESP32
-        mensaje.innerText = "Gracias por perder tu tiempo tan valioso en esta estupidez";
-    });
-</script>
-
+  </script>
 </body>
 </html>
